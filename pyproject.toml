@@ -1,0 +1,7 @@
+[project]
+name = "beholder"
+version = "0.1.0"
+description = "Powerful tool for osint based on multiple data sources"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
