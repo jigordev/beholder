@@ -1,7 +1,12 @@
 [project]
 name = "beholder"
 version = "0.1.0"
-description = "Powerful tool for osint based on multiple data sources"
+description = "Powerful OSINT reconnaissance tool that leverages custom Google and Bing dorks to uncover publicly available information across the web."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "asyncclick>=8.1.8",
+    "bs4>=0.0.2",
+    "httpx>=0.28.1",
+    "playwright>=1.53.0",
+]
