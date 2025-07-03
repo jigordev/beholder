@@ -1,6 +1,5 @@
-def main():
-    print("Hello from beholder!")
-
+import asyncio
+from beholder.core.cli import cli
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(cli())
