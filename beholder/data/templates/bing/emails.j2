@@ -1,1 +1,12 @@
-{% for site in sites %}site:{{ site }} {% if search_files %}ext:txt | ext:pdf | ext:xls | ext:xlsx{% endif %} "@{{ site }}" "contact" "email" "e-mail" "mail"{% endfor %}
+(
+  {%- for site in sites -%}
+    site:{{ site }} "@{{ site }}"
+    {%- if not loop.last %} | {% endif %}
+  {%- endfor -%}
+)
+("contact" | "email" | "e-mail" | "mail")
+{%- if search_files == "true" %}
+(
+  ext:txt | ext:pdf | ext:xls | ext:xlsx
+)
+{%- endif %}
