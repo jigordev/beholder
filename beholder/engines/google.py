@@ -1,21 +1,13 @@
-import webbrowser
 import urllib.parse
 from beholder.utils.paths import load_dorks_file, load_dorks_template
+from beholder.engines import BaseDorksEngine
+from beholder.utils.parse import parse_query
 
 
-class GoogleDorksEngine:
-    def __init__(self):
-        self.base_url = "https://google.com"
-        self.dork = ""
+GOOGLE_BASE_URL = "https://google.com"
 
-    def _make_query_by_args(self, rule: str, args: list[str]):
-        if len(args) == 0:
-            return
 
-        query = [f"{rule}:{i}" for i in args]
-        query = " | ".join(query)
-        self.dork += f" {query}"
-
+class GoogleDorksEngine(BaseDorksEngine):
     def site(self, args: list[str]):
         self._make_query_by_args("site", args)
         return self
@@ -52,29 +44,9 @@ class GoogleDorksEngine:
         self.dork += f" {query}"
         return self
 
-    def clear(self):
-        self.dork = ""
-
-    def search(self):
+    def _build_url(self):
         query = urllib.parse.quote_plus(self.dork)
-        search_url = f"{self.base_url}/search?q={query}"
-        webbrowser.open(search_url)
-
-    def __str__(self):
-        return self.dork.strip()
-
-
-def parse_query(template_data: dict, query: str = None):
-    for key, params in template_data.items():
-        new_params = []
-        for param in params:
-            if "{query}" in param:
-                if query:
-                    new_params.append(param.replace("{query}", query))
-            else:
-                new_params.append(param)
-        template_data[key] = new_params
-    return template_data
+        self.search_url = f"{GOOGLE_BASE_URL}/search?q={query}"
 
 
 def search_google_dorks(
