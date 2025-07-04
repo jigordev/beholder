@@ -1,30 +1,11 @@
-import webbrowser
+from beholder.engines.google import get_google_search_url
+from beholder.engines.bing import get_bing_search_url
 
 
-class BaseDorksEngine:
-    def __init__(self):
-        self.dork = ""
-        self.search_url = ""
-
-    def search(self):
-        try:
-            self._build_url()
-            webbrowser.open_new(self.search_url)
-            self.clear()
-        except Exception as e:
-            print(f"Error when starting broser: {e}")
-
-    def clear(self):
-        self.dork = ""
-        self.search_url = ""
-
-    def _make_query_by_args(self, rule: str, args: list[str]):
-        if len(args) == 0:
-            return
-
-        query = [f"{rule}:{i}" for i in args]
-        query = " | ".join(query)
-        self.dork += f" {query}"
-
-    def __str__(self):
-        return self.dork.strip()
+def get_search_url(engine: str, dork: str) -> str:
+    if engine == "google":
+        return get_google_search_url(dork)
+    elif engine == "bing":
+        return get_bing_search_url(dork)
+    else:
+        raise ValueError(f"Invalid search engine: {engine}")
