@@ -1,14 +1,12 @@
 import asyncclick as click
-from beholder.engines.google import search_google_dorks
-from beholder.engines.bing import search_bing_dorks
-
-
-def parse_list(value):
-    return [v.strip() for v in value.split(",")] if value else []
+from beholder.engines import get_search_url
+from beholder.core.templates import render_dorks_template
+from beholder.core.browser import open_webbrowser
+from beholder.utils.parse import load_json_vars, parse_key_value_args
+from beholder.utils.paths import get_data_path
 
 
 @click.command()
-@click.argument("query", required=True)
 @click.option(
     "-e",
     "--engine",
@@ -16,68 +14,41 @@ def parse_list(value):
     required=True,
     help="Search engine to use",
 )
-@click.option("-q", "--quoted-terms", help="List of quoted terms")
-@click.option("-x", "--intext", help="List of terms in text/body")
-@click.option("-t", "--intitle", help="List of page titles")
-@click.option("-u", "--inurl", help="List of terms in urls")
-@click.option("-s", "--site", help="List of sites")
-@click.option("-d", "--domain", help="List of domains (bing only)")
-@click.option("-E", "--exclude", help="List of excluded terms")
-@click.option("-f", "--filetype", help="List of file extensions")
-@click.option("-T", "--template", help="Dorks template name")
-@click.option("-C", "--custom-template", help="Custom dorks template file")
-async def search(
-    query,
-    engine,
-    quoted_terms,
-    intext,
-    intitle,
-    inurl,
-    site,
-    domain,
-    exclude,
-    filetype,
-    template,
-    custom_template,
-):
-    quoted_terms = parse_list(quoted_terms)
-    texts = parse_list(intext)
-    titles = parse_list(intitle)
-    urls = parse_list(inurl)
-    sites = parse_list(site)
-    domains = parse_list(domain)
-    excludes = parse_list(exclude)
-    files = parse_list(filetype)
+@click.option(
+    "-v", "--var", multiple=True, help="Specify dork template variables key=value"
+)
+@click.option("-j", "--json-file", help="Specify variables from json file")
+@click.option("-t", "--template", help="Dorks template name")
+@click.option("-T", "--template-file", help="Custom dorks template file")
+async def search(engine, var, json_file, template, template_file):
+    if not template and not template_file:
+        raise click.UsageError("You must specify either --template or --template-file.")
 
-    if engine == "google":
-        search_google_dorks(
-            query,
-            quoted_terms=quoted_terms,
-            texts=texts,
-            titles=titles,
-            urls=urls,
-            sites=sites,
-            excludes=excludes,
-            files=files,
-            template=template,
-            template_file=custom_template,
-        )
-    elif engine == "bing":
-        search_bing_dorks(
-            query,
-            quoted_terms=quoted_terms,
-            texts=texts,
-            titles=titles,
-            urls=urls,
-            sites=sites,
-            domains=domains,
-            excludes=excludes,
-            files=files,
-            template=template,
-            template_file=custom_template,
-        )
+    data = {}
+
+    if json_file:
+        data = load_json_vars(json_file)
     else:
-        raise click.ClickException(f"Unsupported engine: {engine}")
+        data = parse_key_value_args(var)
+
+    template_path = None
+    if template:
+        template_path = get_data_path("templates", engine, template)
+    else:
+        template_path = template_file
+
+    try:
+        dork = render_dorks_template(template_path, data)
+        click.echo(f"[DORK][{engine.upper()}]: {dork}")
+    except Exception as e:
+        raise click.ClickException(f"Failed to render dork template: {e}")
+
+    search_url = get_search_url(engine, dork)
+
+    try:
+        open_webbrowser(search_url)
+    except Exception as e:
+        raise click.ClickException(f"Failed to open browser: {e}")
 
 
 @click.group()
