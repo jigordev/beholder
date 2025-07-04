@@ -7,5 +7,7 @@ def render_dorks_template(template_path: Path, context) -> str:
         raise FileNotFoundError(f"Template not found: {template_path}")
 
     template_str = template_path.read_text()
-    template = Template(template_str, undefined=StrictUndefined)
+    template = Template(
+        template_str, undefined=StrictUndefined, trim_blocks=True, lstrip_blocks=True
+    )
     return template.render(**context)
